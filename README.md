@@ -1,12 +1,18 @@
 # App Mesh Integration with Ingress nginx
-
+This repository illustrated how to setup [Ingress-nginx](https://github.com/kubernetes/ingress-nginx) work with AWS App Mesh example application [Color App](https://github.com/aws/aws-app-mesh-examples/tree/master/examples/apps/colorapp)
 
 ## How it works
 ![](./appmesh-ingress-nginx.png)
+
+Key take aways:
+* Create App Mesh VirtualNode for deployment nginx-ingress-controller
+* Set backends for VirtualNode, nginx-ingress-controller will call service colorteller.appmesh-demo and kubernetes.default
+* ingress-nginx will get endpoints (Pod IP:port) of service as upstream for nginx by default, we must set upstream point to service to egress traffic intercepted by envoy.
+* Host of upstream request must be the service name
+
 ## Deployment
-### 1. create eks cluster
+### 1. create eks cluster with eksctl
 ```bash
-#REGION=$(curl -sS http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
 REGION=ap-southeast-1
 export MESH_NAME=color-mesh
 eksctl create cluster --region $REGION --name appmesh-test --version 1.13 --appmesh-access
@@ -17,7 +23,7 @@ eksctl create cluster --region $REGION --name appmesh-test --version 1.13 --appm
 kubectl apply -f https://raw.githubusercontent.com/aws/aws-app-mesh-controller-for-k8s/master/deploy/all.yaml
 ```
 
-### optional, check resources
+check controller resources
 ```bash
 kubectl rollout status deployment app-mesh-controller -n appmesh-system
 kubectl get crd
@@ -33,11 +39,6 @@ curl https://raw.githubusercontent.com/aws/aws-app-mesh-inject/master/scripts/in
 kubectl apply -f https://raw.githubusercontent.com/aws/aws-app-mesh-controller-for-k8s/v0.1.0/examples/color.yaml
 ```
 
-### optional, test
-```bash
-kubectl run -n appmesh-demo -it curler --image=tutum/curl /bin/bash
-```
-
 ### 5. install ingress-nginx and app mesh virtual node
 ```bash
 kubectl create ns ingress-nginx
@@ -48,7 +49,7 @@ kubectl apply -f ./nginx-ingress-appmesh.yaml
 kubectl apply -f ./nginx-ingress.yaml
 ```
 
-### optional, watch query result of ingress
+watch query result of ingress:
 ```bash
 ELB_URL=$(kubectl get svc ingress-nginx -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
 watch -t curl -s http://$ELB_URL/color; echo;
