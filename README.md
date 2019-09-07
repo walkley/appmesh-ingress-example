@@ -2,7 +2,7 @@
 ```bash
 #REGION=$(curl -sS http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
 REGION=ap-southeast-1
-MESH_NAME=color-mesh
+export MESH_NAME=color-mesh
 eksctl create cluster --region $REGION --name appmesh-test --version 1.13 --appmesh-access
 ```
 
@@ -36,9 +36,9 @@ kubectl run -n appmesh-demo -it curler --image=tutum/curl /bin/bash
 ```bash
 kubectl create ns ingress-nginx
 kubectl label namespace ingress-nginx appmesh.k8s.aws/sidecarInjectorWebhook=enabled
-kubectl apply -f ./nginx-ingress-appmesh.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/service-nlb.yaml
+kubectl apply -f ./nginx-ingress-appmesh.yaml
 kubectl apply -f ./nginx-ingress.yaml
 ```
 
@@ -56,4 +56,5 @@ kubectl delete crd virtualnodes.appmesh.k8s.aws
 kubectl delete crd virtualservices.appmesh.k8s.aws
 kubectl delete namespace appmesh-system
 kubectl delete namespace appmesh-inject
+eksctl delete cluster appmesh-test
 ```
