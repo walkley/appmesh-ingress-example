@@ -4,9 +4,9 @@ This repository illustrated how to setup [Ingress-nginx](https://github.com/kube
 ## How it works
 ![](./appmesh-ingress-nginx.png)
 
-Key take aways:
+Key takeaways:
 * Create App Mesh VirtualNode for deployment nginx-ingress-controller
-* Set backends for VirtualNode, nginx-ingress-controller will call service colorteller.appmesh-demo and kubernetes.default
+* Set backends for VirtualNode, nginx-ingress-controller will call service colorteller.appmesh-demo and kubernetes.
 * ingress-nginx will get endpoints (Pod IP:port) of service as upstream for nginx by default, we must set upstream point to service to egress traffic intercepted by envoy.
 * Host of upstream request must be the service name
 
